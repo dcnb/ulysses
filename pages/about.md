@@ -1,5 +1,5 @@
 ---
-title: "Ulysses — About"
+title: "Frankenstein; or, the modern prometheus — About"
 layout: about
 permalink: /about.html
 credits: true
