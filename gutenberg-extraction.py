@@ -294,6 +294,65 @@ def extract_toc_anchors(html_text: str) -> List[str]:
     return anchors
 
 
+def extract_toc_part_map(html_text: str) -> Dict[str, str]:
+    """Map chapter anchor IDs to their part label using Gutenberg's large-bold TOC style.
+
+    Detects the specific pattern:
+      <a href="#partNN" class="pginternal">
+        <span style="font-size: large;"><b>— I —</b></span>
+      </a>
+
+    Returns {} if the pattern isn't present (graceful no-op for most books).
+    """
+    link_re = re.compile(
+        r'<a\b[^>]*\bhref="#([^"]+)"[^>]*class="pginternal"[^>]*>(.*?)</a>',
+        re.IGNORECASE | re.DOTALL,
+    )
+    link_re2 = re.compile(
+        r'<a\b[^>]*class="pginternal"[^>]*\bhref="#([^"]+)"[^>]*>(.*?)</a>',
+        re.IGNORECASE | re.DOTALL,
+    )
+    part_re = re.compile(
+        r'<span[^>]+style="[^"]*font-size\s*:\s*large[^"]*"[^>]*>\s*<b>\s*[—–\-]+\s*([IVXLCDM]+)\s*[—–\-]+\s*</b>',
+        re.IGNORECASE,
+    )
+
+    matches = []
+    seen = set()
+    for m in link_re.finditer(html_text):
+        key = (m.start(), m.group(1))
+        if key not in seen:
+            seen.add(key)
+            matches.append((m.start(), m.group(1), m.group(2)))
+    for m in link_re2.finditer(html_text):
+        key = (m.start(), m.group(1))
+        if key not in seen:
+            seen.add(key)
+            matches.append((m.start(), m.group(1), m.group(2)))
+    matches.sort(key=lambda x: x[0])
+
+    if not matches:
+        return {}
+
+    sequence = []
+    for _, anchor_id, content in matches:
+        pm = part_re.search(content)
+        sequence.append((anchor_id, pm.group(1).upper() if pm else None))
+
+    if not any(part for _, part in sequence):
+        return {}
+
+    part_map = {}
+    current_part = None
+    for anchor_id, part_label in sequence:
+        if part_label is not None:
+            current_part = part_label
+        elif current_part is not None:
+            part_map[anchor_id] = current_part
+
+    return part_map
+
+
 def is_section_id(element_id: str, toc_anchors: List[str] = None) -> Tuple[bool, str]:
     """Check if an element ID marks a section boundary.
 
@@ -1290,13 +1349,15 @@ def create_cb_essay_book_yml(metadata: Dict, image_urls: Dict, sections_info: Di
     return '\n'.join(lines) + '\n'
 
 
-def create_cb_essay_markdown(section: Dict, order: int) -> str:
+def create_cb_essay_markdown(section: Dict, order: int, part: str = None) -> str:
     """Create markdown file for CB-Essay _essay folder (simplified front matter)."""
     title = normalize_text(section['title'], for_yaml=True)
 
     fm_lines = ['---']
     fm_lines.append(f'title: {title}')
     fm_lines.append(f'order: {order}')
+    if part:
+        fm_lines.append(f'part: {part}')
     fm_lines.append('---')
     fm_lines.append('')
 
@@ -1306,7 +1367,8 @@ def create_cb_essay_markdown(section: Dict, order: int) -> str:
 def save_cb_essay_files(front_matter: List[Dict], chapters: List[Dict],
                         essay_out: Path, data_dir: Path,
                         metadata: Dict, image_urls: Dict,
-                        downloaded_cover: str = None) -> Dict:
+                        downloaded_cover: str = None,
+                        part_map: Dict = None) -> Dict:
     """Save essay markdown files and book.yml."""
     essay_out.mkdir(parents=True, exist_ok=True)
     data_dir.mkdir(parents=True, exist_ok=True)
@@ -1325,7 +1387,8 @@ def save_cb_essay_files(front_matter: List[Dict], chapters: List[Dict],
         filename = f"{number}-{sanitize_filename(section['title'])}.md"
         filepath = essay_out / filename
 
-        content = create_cb_essay_markdown(section, idx)
+        part = (part_map or {}).get(section.get('id'))
+        content = create_cb_essay_markdown(section, idx, part=part)
 
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(content)
