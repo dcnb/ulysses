@@ -351,6 +351,7 @@ def extract_toc_part_map(html_text: str) -> Dict[str, str]:
     for anchor_id, part_label in sequence:
         if part_label is not None:
             current_part = part_label
+            part_map[anchor_id] = current_part  # part divider gets its own label
         elif current_part is not None:
             part_map[anchor_id] = current_part
 
