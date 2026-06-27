@@ -234,7 +234,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add _essay/ _data/ _config.yml pages/about.md objects/ 2>/dev/null || true
+          git add _essay/ _data/ _config.yml pages/about.md 2>/dev/null || true
+          # Force-add cover image, overriding the objects/ gitignore rule
+          git add --force objects/${{ inputs.book_id }}cover.jpg objects/${{ inputs.book_id }}cover.png 2>/dev/null || true
 
           if git diff --staged --quiet; then
             echo "No changes to commit"
