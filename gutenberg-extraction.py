@@ -312,10 +312,7 @@ def extract_toc_part_map(html_text: str) -> Dict[str, str]:
         r'<a\b[^>]*class="pginternal"[^>]*\bhref="#([^"]+)"[^>]*>(.*?)</a>',
         re.IGNORECASE | re.DOTALL,
     )
-    part_re = re.compile(
-        r'<span[^>]+style="[^"]*font-size\s*:\s*large[^"]*"[^>]*>\s*<b>\s*[—–\-]+\s*([IVXLCDM]+)\s*[—–\-]+\s*</b>',
-        re.IGNORECASE,
-    )
+    part_id_re = re.compile(r'^part\d+$', re.IGNORECASE)
 
     matches = []
     seen = set()
@@ -336,8 +333,15 @@ def extract_toc_part_map(html_text: str) -> Dict[str, str]:
 
     sequence = []
     for _, anchor_id, content in matches:
-        pm = part_re.search(content)
-        sequence.append((anchor_id, pm.group(1).upper() if pm else None))
+        if part_id_re.match(anchor_id):
+            # Extract label from link text: strip HTML, strip em-dashes/whitespace
+            label = re.sub(r'<[^>]+>', '', content)
+            label = re.sub(r'[—–\-\s]+', ' ', label).strip()
+            roman_match = re.search(r'\b([IVXLCDM]+)\b', label, re.IGNORECASE)
+            label = roman_match.group(1).upper() if roman_match else label
+            sequence.append((anchor_id, label or anchor_id))
+        else:
+            sequence.append((anchor_id, None))
 
     if not any(part for _, part in sequence):
         return {}
@@ -1649,6 +1653,11 @@ def extract_book(book_id: str, project_root: str = None, essay_dir: str = None,
     if toc_anchors:
         vprint(f"  Found {len(toc_anchors)} TOC anchor links")
 
+    part_map = extract_toc_part_map(html_content)
+    if part_map:
+        part_labels = sorted(set(part_map.values()))
+        vprint(f"  Detected {len(part_labels)} TOC parts: {part_labels}")
+
     parser = GutenbergHTMLParser(toc_anchors=toc_anchors)
     parser.feed(clean_html)
     front_matter, chapters, _ = parser.get_results()
@@ -1688,7 +1697,8 @@ def extract_book(book_id: str, project_root: str = None, essay_dir: str = None,
 
     save_cb_essay_files(
         front_matter, chapters, essay_out, data_dir,
-        metadata, image_urls, downloaded_cover
+        metadata, image_urls, downloaded_cover,
+        part_map=part_map,
     )
 
     update_theme_print_author(root_path, metadata.get('author'))
