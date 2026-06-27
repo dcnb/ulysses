@@ -49,14 +49,14 @@ source-code: https://github.com/CollectionBuilder/collectionbuilder-csv
 # These fields control what appears on your homepage cover/title page
 #
 # title: Main title displayed prominently on the cover page (required)
-title: Frankenstein; or, the modern prometheus
+title: Ulysses
 #
 # author: Appears as "by [Author Name]" beneath the title on cover page (optional)
 # - If provided, this displays instead of the tagline
 # - Leave blank to show tagline instead
 # - You can use HTML to add line breaks or additional attribution:
 #   author: "Author Name<br>Edited by Editor Name<br>Translated by Translator Name"
-author: Shelley, Mary Wollstonecraft, 1797-1851
+author: Joyce, James, 1882-1941
 #
 # tagline: A subtitle/tagline that appears beneath the title (optional)
 # - Only displays if "author" field is empty
@@ -70,8 +70,8 @@ tagline: Essay in the front, CollectionBuilder in the back
 # description: Longer description for search engines and social sharing (recommended)
 # - Appears in meta tags and search results
 # - Keep around 160 characters max for best display in search results
-description: "A digital edition of Frankenstein; or, the modern prometheus by Shelley,
-  Mary Wollstonecraft, 1797-1851, extracted from Project Gutenberg"
+description: "A digital edition of Ulysses by Joyce, James, 1882-1941, extracted from
+  Project Gutenberg"
 #
 # keywords: Short list of subjects separated by semicolons, for rich markup metadata
 keywords: digital humanities; multimodal essays; lib-static

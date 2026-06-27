@@ -17,11 +17,10 @@
 # - Collection objectid: demo_001
 #
 image-style: half-image                # full-image, half-image, or no-image
-featured-image: /assets/img/84cover.jpg
-featured-image-credit: "This is a cover of the Frankenstein; or, the modern prometheus
-  by Shelley, Mary Wollstonecraft, 1797-1851 as extracted from Project Gutenberg;
-  it can be found here: https://www.gutenberg.org/ebooks/84"
-featured-image-alt-text: "Cover image of Frankenstein; or, the modern prometheus"  # Add alt text for accessibility
+featured-image: /assets/img/4300cover.jpg
+featured-image-credit: "This is a cover of the Ulysses by Joyce, James, 1882-1941
+  as extracted from Project Gutenberg; it can be found here: https://www.gutenberg.org/ebooks/4300"
+featured-image-alt-text: "Cover image of Ulysses"                                  # Add alt text for accessibility
 
 
 # NAVIGATION FEATURES
@@ -124,7 +123,7 @@ font-cdn:                         # only set if base/display-font-family is cust
 # The print hub is available at /print/ once added to config-nav.csv.
 #
 print:
-  author: "Shelley, Mary Wollstonecraft, 1797-1851"
+  author: "Joyce, James, 1882-1941"
   institution:             # Institution shown on cover page
   cover-subtitle:          # Subtitle line beneath site title on book cover
   cover-image: false       # true/false — show featured-image on book cover by default
